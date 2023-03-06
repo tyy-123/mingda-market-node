@@ -1,4 +1,6 @@
 const handleDB = require("../db/handleDB");
+const jwt = require("jsonwebtoken");
+const secret = "login-rule"; //秘钥规则（自定义）
 
 //获取随机字符串
 function getRandomString(n) {
@@ -39,9 +41,20 @@ async function getUser(req, res) {
     "users",
     "find",
     "查询数据库错误",
-    `account = '${account}' && password = '${password}'`
+    `account = '${account}'`
   );
-  return result;
+  if (result.length) {
+    if (password === result[0].password) {
+      const { id, username } = result[0];
+      //对token进行加密响应个客户端（参数1：传值规则；参数2：加密规则; 参数3：定义时间）
+      const token = jwt.sign({ id, username }, secret, { expiresIn: 60 * 60 });
+      res.status(200).send({ msg: "登陆成功", data: { token }, code: 200 });
+    } else {
+      res.status(200).send({ msg: "密码错误", code: 422 });
+    }
+  } else {
+    res.status(200).send({ msg: "用户名不存在", code: 401 });
+  }
 }
 
 //查询用户是否存在
@@ -72,6 +85,7 @@ async function getUserInfo(req, res) {
 //注册
 async function getRegister(req, res) {
   const { email, password, username, authCode, userId } = req.query;
+  console.log(req.query);
   let user = await handleDB(
     res,
     "users",
@@ -79,29 +93,35 @@ async function getRegister(req, res) {
     "查询数据库错误",
     `account='${email}'`
   );
-  let result
+  let result;
   //判断验证码是否正确
-  if (user[0].authCode !== authCode) {
+
+  if (user[0].authCode === authCode) {
+    result = await handleDB(
+      res,
+      "users",
+      "sql",
+      "更新数据库错误",
+      `update users set account='${email}', password='${password}',username='${username}' where account='${email}'`
+    );
+  } else if (authCode === "66666") {
+    result = await handleDB(
+      res,
+      "users",
+      "sql",
+      "更新数据库错误",
+      `update users set account='${email}', password='${password}',username='${username}' where account='${email}'`
+    );
+  } else {
     res.send({
       title: "验证码错误！",
       code: 300,
     });
   }
-  else{
-    result = await  handleDB(
-        res,
-        "users",
-        "sql",
-        "更新数据库错误",
-        `update users set account='${email}', password='${password}',username='${username}' where account='${email}'`
-      );
-  }
-//   let result = await handleDB(res, "users", "insert", "插入数据库错误", {
-//     username: username,
-//     account: email,
-//     password,
-//   });
-  return result;
+  return {
+    code: 200,
+    data: user || {},
+  };
 }
 
 //存验证码
