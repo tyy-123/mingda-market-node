@@ -88,7 +88,7 @@ app.get("/detail", (req, res) => {
 });
 
 //登录
-app.get("/login", (req, res) => {
+app.get("/api/login", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   common.getUser(req, res).then((result) => {
     res.send(result);
@@ -96,7 +96,7 @@ app.get("/login", (req, res) => {
 });
 
 //注册
-app.get("/getCode", (req, res) => {
+app.get("/api/getCode", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   const { email } = req.query;
   common.getUserExist(req, res).then((result) => {
@@ -117,13 +117,13 @@ app.get("/getCode", (req, res) => {
           subject: "欢迎注册民大集市!",
         },
         (err, message) => {
-          if (err) {
-            res.send({
-              title: "发送邮件错误",
-              code: 500,
-              err,
-            });
-          } else {
+          // if (err) {
+          //   res.send({
+          //     title: "发送邮件错误",
+          //     code: 500,
+          //     err,
+          //   });
+          // } else {
             res.send({
               title: "邮件发送成功，请输入验证码!",
               code: 200,
@@ -133,10 +133,18 @@ app.get("/getCode", (req, res) => {
               res.send(result);
             });
             return;
-          }
+          // }
         }
       );
     }
+  });
+});
+
+//保存用户到数据库
+app.post("/api/register", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.getRegister(req, res).then((result) => {
+    res.send(result);
   });
 });
 
@@ -144,14 +152,6 @@ app.get("/getCode", (req, res) => {
 app.get("/getUserInfo", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   common.getUserInfo(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//保存用户到数据库
-app.post("/register", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.getRegister(req, res).then((result) => {
     res.send(result);
   });
 });
