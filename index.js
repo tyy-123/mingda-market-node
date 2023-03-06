@@ -2,6 +2,7 @@
  * @Description: 接口的编写
  */
 const express = require("express");
+const handleDB = require("./db/handleDB");
 const ws = require("nodejs-websocket");
 const { SMTPClient } = require("emailjs");
 const jwt = require("jsonwebtoken");
@@ -13,6 +14,33 @@ const emailServer = new SMTPClient({
   host: "smtp.qq.com",
   ssl: true,
 });
+
+token = async (req, res, next) => {
+  //定义token验证中间件函数（应用于除登录外的每个请求）
+  if (req.headers.authorization) {
+    const token = req.headers.authorization;
+    const { useId, account } = jwt.verify(token, secret); // 对token进行解密查找
+    let result = handleDB(
+      res,
+      "users",
+      "find",
+      "查询数据库错误",
+      `useId = '${useId}'`
+    );
+    console.log(sql);
+    if (result.length === 0) {
+      res.status(200).send({ msg: "用户错误" });
+      return;
+    }
+    if (account !== result[0].account) {
+      res.status(200).send({ msg: "用户错误" });
+    } else {
+      next();
+    }
+  } else {
+    res.status(200).send({ msg: "无效请求头" });
+  }
+};
 
 // 创建express对象
 const app = new express();
@@ -124,21 +152,23 @@ app.get("/api/getCode", (req, res) => {
           //     err,
           //   });
           // } else {
-            res.send({
-              title: "邮件发送成功，请输入验证码!",
-              code: 200,
-              authCode,
-            });
-            common.saveCode({ email, authCode }, res).then((result) => {
-              res.send(result);
-            });
-            return;
+          res.send({
+            title: "邮件发送成功，请输入验证码!",
+            code: 200,
+            authCode,
+          });
+          common.saveCode({ email, authCode }, res).then((result) => {
+            res.send(result);
+          });
+          return;
           // }
         }
       );
     }
   });
 });
+//验证token
+app.use(token);
 
 //保存用户到数据库
 app.post("/api/register", (req, res) => {

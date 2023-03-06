@@ -45,9 +45,9 @@ async function getUser(req, res) {
   );
   if (result.length) {
     if (password === result[0].password) {
-      const { id, username } = result[0];
+      const { userId, account } = result[0];
       //对token进行加密响应个客户端（参数1：传值规则；参数2：加密规则; 参数3：定义时间）
-      const token = jwt.sign({ id, username }, secret, { expiresIn: 60 * 60 });
+      const token = jwt.sign({ userId, account }, secret, { expiresIn: 60 * 60 });
       res.status(200).send({ msg: "登陆成功", data: { token }, code: 200 });
     } else {
       res.status(200).send({ msg: "密码错误", code: 422 });
