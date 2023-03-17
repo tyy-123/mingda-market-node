@@ -47,7 +47,9 @@ async function getUser(req, res) {
     if (password === result[0].password) {
       const { userId, account } = result[0];
       //对token进行加密响应个客户端（参数1：传值规则；参数2：加密规则; 参数3：定义时间）
-      const token = jwt.sign({ userId, account }, secret, { expiresIn: 60 * 60 });
+      const token = jwt.sign({ userId, account }, secret, {
+        expiresIn: 60 * 60,
+      });
       res.status(200).send({ msg: "登陆成功", data: { token }, code: 200 });
     } else {
       res.status(200).send({ msg: "密码错误", code: 422 });
@@ -70,21 +72,32 @@ async function getUserExist(req, res) {
   return result;
 }
 
-//获取用户信息
+//通过userId获取用户信息
 async function getUserInfo(req, res) {
-  const { c_id } = req.query;
-  return await handleDB(
+  const { userId } = req.query;
+  let result = await handleDB(
     res,
     "users",
     "find",
     "查询数据库错误",
-    `c_id='${c_id}'`
+    `userId='${userId}'`
   );
+  if (result.length) {
+    return {
+      code: 200,
+      data: result[0],
+    };
+  } else {
+    return {
+      code: 200,
+      msg: "用户不存在",
+    };
+  }
 }
 
 //注册
 async function getRegister(req, res) {
-  const { email, password, username, authCode, userId } = req.query;
+  const { email, password, username, authCode } = req.query;
   console.log(req.query);
   let user = await handleDB(
     res,
@@ -95,7 +108,9 @@ async function getRegister(req, res) {
   );
   let result;
   //判断验证码是否正确
-
+  console.log(user);
+  const { userId, account } = user;
+  const token = jwt.sign({ userId, account }, secret, { expiresIn: 60 * 60 });
   if (user[0].authCode === authCode) {
     result = await handleDB(
       res,
@@ -120,7 +135,7 @@ async function getRegister(req, res) {
   }
   return {
     code: 200,
-    data: user || {},
+    data: { token } || {},
   };
 }
 

@@ -167,8 +167,6 @@ app.get("/api/getCode", (req, res) => {
     }
   });
 });
-//验证token
-app.use(token);
 
 //保存用户到数据库
 app.post("/api/register", (req, res) => {
@@ -179,11 +177,20 @@ app.post("/api/register", (req, res) => {
 });
 
 //获取用户信息
-app.get("/getUserInfo", (req, res) => {
+app.get("/api/getUserInfo", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   common.getUserInfo(req, res).then((result) => {
     res.send(result);
   });
+});
+
+//验证token
+app.use(token);
+
+//通过token获取当前用户登录信息
+app.get("/api/getLoginUser", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  return token();
 });
 
 // 新建订单到数据库
