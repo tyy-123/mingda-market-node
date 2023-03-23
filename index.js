@@ -3,6 +3,7 @@
  */
 const express = require("express");
 const handleDB = require("./db/handleDB");
+const secret = "login-rule"; //秘钥规则（自定义）
 const ws = require("nodejs-websocket");
 const { SMTPClient } = require("emailjs");
 const jwt = require("jsonwebtoken");
@@ -19,15 +20,17 @@ token = async (req, res, next) => {
   //定义token验证中间件函数（应用于除登录外的每个请求）
   if (req.headers.authorization) {
     const token = req.headers.authorization;
-    const { useId, account } = jwt.verify(token, secret); // 对token进行解密查找
-    let result = handleDB(
+    const { userId, account } = jwt.verify(token, secret); // 对token进行解密查找
+    console.log(userId);
+    console.log(account);
+    let result = await handleDB(
       res,
       "users",
       "find",
       "查询数据库错误",
-      `useId = '${useId}'`
+      `userId = '${userId}'`
     );
-    console.log(sql);
+    console.log(result);
     if (result.length === 0) {
       res.status(200).send({ msg: "用户错误" });
       return;
@@ -190,7 +193,9 @@ app.use(token);
 //通过token获取当前用户登录信息
 app.get("/api/getLoginUser", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
-  return token();
+  common.getUserByToken(req, res).then((result) => {
+    res.send(result);
+  });
 });
 
 // 新建订单到数据库

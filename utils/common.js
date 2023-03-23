@@ -139,6 +139,35 @@ async function getRegister(req, res) {
   };
 }
 
+//根据token获取用户信息
+async function getUserByToken(req, res) {
+  if (req.headers.authorization) {
+    const token = req.headers.authorization;
+    const { userId, account } = jwt.verify(token, secret); // 对token进行解密查找
+    let result = await handleDB(
+      res,
+      "users",
+      "find",
+      "查询数据库错误",
+      `userId = '${userId}'`
+    );
+    if (result.length === 0) {
+      res.status(200).send({ msg: "用户错误" });
+      return;
+    }
+    if (account !== result[0].account) {
+      res.status(200).send({ msg: "用户错误" });
+    } else {
+      return {
+        code: 200,
+        data: result[0] || {},
+      };
+    }
+  } else {
+    res.status(200).send({ msg: "无效请求头" });
+  }
+}
+
 //存验证码
 async function saveCode(req, res) {
   const { email, authCode } = req;
@@ -472,6 +501,7 @@ module.exports = {
   amendOrd,
   getAtt,
   getAttd,
+  getUserByToken,
   query,
   addAttention,
   cancelAtt,
