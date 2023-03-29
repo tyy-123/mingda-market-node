@@ -193,7 +193,15 @@ app.use(token);
 //通过token获取当前用户登录信息
 app.get("/api/getLoginUser", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
-  common.getUserByToken(req, res).then((result) => {
+  common.getLoginUser(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
+//获得所有的帖子列表
+app.get("/api/getNoteList", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.getNoteList(req, res).then((result) => {
     res.send(result);
   });
 });

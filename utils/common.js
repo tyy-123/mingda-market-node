@@ -140,7 +140,7 @@ async function getRegister(req, res) {
 }
 
 //根据token获取用户信息
-async function getUserByToken(req, res) {
+async function getLoginUser(req, res) {
   if (req.headers.authorization) {
     const token = req.headers.authorization;
     const { userId, account } = jwt.verify(token, secret); // 对token进行解密查找
@@ -177,6 +177,26 @@ async function saveCode(req, res) {
   });
   return result;
 }
+
+//获得所有的帖子列表
+async function getNoteList(req, res) {
+  const result = await handleDB(res, "notes", "find", "查询数据库错误");
+  return {
+    code: 200,
+    data: result,
+  };
+}
+
+//分页获取的帖子列表
+async function getNoteListByPage(req, res) {
+  const result = await handleDB(res, "notes", "find", "查询数据库错误");
+  return {
+    code: 200,
+    data: result,
+  };
+}
+
+
 
 //获取所有订单信息
 async function getOrder(req, res) {
@@ -484,6 +504,7 @@ async function deleteAllOrder(req, res) {
 
 module.exports = {
   csrfProtect,
+  getNoteList,
   saveCode,
   getUser,
   getUserExist,
@@ -501,7 +522,7 @@ module.exports = {
   amendOrd,
   getAtt,
   getAttd,
-  getUserByToken,
+  getLoginUser,
   query,
   addAttention,
   cancelAtt,
