@@ -189,11 +189,21 @@ async function getNoteList(req, res) {
 
 //分页获取的帖子列表
 async function getNoteListByPage(req, res) {
-  const { current, page } = req.query;
-  const result = await handleDB(res, "notes", "limit", "查询数据库错误", {
-    current,
-    page,
-  });
+  const { current, page, modelId } = req.query;
+  let result;
+  console.log(modelId);
+  if (modelId !== undefined) {
+    result = await handleDB(res, "notes", "limit", "查询数据库错误", {
+      where: `modelId = '${modelId}'`,
+      current,
+      page,
+    });
+  } else {
+    result = await handleDB(res, "notes", "limit", "查询数据库错误", {
+      current,
+      page,
+    });
+  }
   return {
     code: 200,
     data: result,
