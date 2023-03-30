@@ -189,14 +189,16 @@ async function getNoteList(req, res) {
 
 //分页获取的帖子列表
 async function getNoteListByPage(req, res) {
-  const result = await handleDB(res, "notes", "find", "查询数据库错误");
+  const { current, page } = req.query;
+  const result = await handleDB(res, "notes", "limit", "查询数据库错误", {
+    current,
+    page,
+  });
   return {
     code: 200,
     data: result,
   };
 }
-
-
 
 //获取所有订单信息
 async function getOrder(req, res) {
@@ -519,6 +521,7 @@ module.exports = {
   confirmSingle,
   getAttention,
   amendPass,
+  getNoteListByPage,
   amendOrd,
   getAtt,
   getAttd,

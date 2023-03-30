@@ -206,6 +206,14 @@ app.get("/api/getNoteList", (req, res) => {
   });
 });
 
+//分页获取的帖子列表
+app.get("/api/getNoteListByPage", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.getNoteListByPage(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
 // 新建订单到数据库
 app.post("/addOrder", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");

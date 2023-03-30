@@ -64,15 +64,15 @@ Model.prototype.find = function (options, callback) {
 
 /**
 * @description: 分页查询
-* @param {Object} options :   { where:查询条件, number: 当前页数 , count : 每页数量 }
+* @param {Object} options :   { where:查询条件, current: 当前页数 , page : 每页数量 }
 * @return: 
 */
 Model.prototype.limit = function (options, callback) {
     var str = '';
     if (!options.where) {
-        str = `select * from ${this.name} limit ${(options.number - 1) * options.count},${options.count}`;
+        str = `select * from ${this.name} limit ${(options.current - 1) * options.page},${options.page}`;
     } else {
-        str = str = `select * from ${this.name} where ${options.where} limit ${(options.number - 1) * options.count},${options.count}`;
+        str = str = `select * from ${this.name} where ${options.where} limit ${(options.current - 1) * options.page},${options.page}`;
     };
     console.log(str, '分页查询');
     connection.query(str, (error, results, fields) => {
