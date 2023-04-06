@@ -181,9 +181,15 @@ async function saveCode(req, res) {
 //获得所有的帖子列表
 async function getNoteList(req, res) {
   const result = await handleDB(res, "notes", "find", "查询数据库错误");
+  const changeResult = result.map((item) => {
+    return {
+      ...item,
+      imgs: JSON.parse(item.imgs),
+    };
+  });
   return {
     code: 200,
-    data: result,
+    data: changeResult,
   };
 }
 
