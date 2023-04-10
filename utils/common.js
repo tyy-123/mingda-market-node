@@ -1,6 +1,7 @@
 const handleDB = require("../db/handleDB");
 const jwt = require("jsonwebtoken");
 const secret = "login-rule"; //秘钥规则（自定义）
+const sd = require("silly-datetime");
 
 //获取随机字符串
 function getRandomString(n) {
@@ -184,7 +185,7 @@ async function getNoteList(req, res) {
   const changeResult = result.map((item) => {
     return {
       ...item,
-      imgs: JSON.parse(item.imgs),
+      imgs: item.imgs.split("*"),
     };
   });
   return {
@@ -210,6 +211,51 @@ async function getNoteListByPage(req, res) {
       page,
     });
   }
+  const changeResult = result.map((item) => {
+    return {
+      ...item,
+      imgs: item.imgs.split("*"),
+    };
+  });
+  return {
+    code: 200,
+    data: changeResult,
+  };
+}
+
+//发布帖子
+async function postNote(req, res) {
+  const { content, userId, imgs, modelId } = req.body;
+  console.log(userId);
+  console.log(imgs);
+  const userMsg = await handleDB(
+    res,
+    "users",
+    "find",
+    "查询数据库错误",
+    `userId = '${userId}'`
+  );
+  const { username, avatar } = userMsg[0];
+  const postMsg = {
+    userId,
+    username,
+    avatar,
+    imgs,
+    modelId: Number(modelId),
+    content,
+    releaseTime: sd.format(new Date(), "YYYY-MM-DD"),
+  };
+  // console.log(postMsg);
+  const result = await handleDB(res, "notes", "insert", "插入数据库错误", {
+    userId,
+    username,
+    avatar,
+    content,
+    modelId: Number(modelId),
+    imgs,
+
+    releaseTime: sd.format(new Date(), "YYYY-MM-DD,HH-mm-ss"),
+  });
   return {
     code: 200,
     data: result,
@@ -548,4 +594,5 @@ module.exports = {
   inquireAtt,
   getUsers,
   deleteAllOrder,
+  postNote,
 };
