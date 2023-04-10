@@ -2,6 +2,8 @@
  * @Description: 接口的编写
  */
 const express = require("express");
+const upload = require("./multer/upload");
+const bodyParser = require("body-parser");
 const handleDB = require("./db/handleDB");
 const secret = "login-rule"; //秘钥规则（自定义）
 const ws = require("nodejs-websocket");
@@ -21,8 +23,8 @@ token = async (req, res, next) => {
   if (req.headers.authorization) {
     const token = req.headers.authorization;
     const { userId, account } = jwt.verify(token, secret); // 对token进行解密查找
-    console.log(userId);
-    console.log(account);
+    // console.log(userId);
+    // console.log(account);
     let result = await handleDB(
       res,
       "users",
@@ -30,7 +32,7 @@ token = async (req, res, next) => {
       "查询数据库错误",
       `userId = '${userId}'`
     );
-    console.log(result);
+    // console.log(result);
     if (result.length === 0) {
       res.status(200).send({ msg: "用户错误" });
       return;
@@ -47,6 +49,10 @@ token = async (req, res, next) => {
 
 // 创建express对象
 const app = new express();
+app.use("/img/", express.static("./public/"));
+// 挂载处理post请求的插件
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 // 随机获取头像背景
 function randomRgb() {
@@ -187,6 +193,27 @@ app.get("/api/getUserInfo", (req, res) => {
   });
 });
 
+// 上传图片接口
+app.post("/api/uploadImage", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  upload(req, res)
+    .then((imgsrc) => {
+      // 上传成功 存储文件路径 到数据库中
+      console.log(imgsrc);
+      res.send({
+        code: 200,
+        data: imgsrc,
+      });
+      return {
+        code: 200,
+        data: imgsrc,
+      };
+    })
+    .catch((err) => {
+      formatErrorMessage(res, err.error);
+    });
+});
+
 //验证token
 app.use(token);
 
@@ -197,6 +224,14 @@ app.get("/api/getLoginUser", (req, res) => {
     res.send(result);
   });
 });
+
+// 格式化错误信息
+function formatErrorMessage(res, message) {
+  res.status(500).send({
+    code: "error",
+    message: message || "",
+  });
+}
 
 //获得所有的帖子列表
 app.get("/api/getNoteList", (req, res) => {
@@ -210,6 +245,14 @@ app.get("/api/getNoteList", (req, res) => {
 app.get("/api/getNoteListByPage", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   common.getNoteListByPage(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
+//发布帖子
+app.post("/api/postNote", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.postNote(req, res).then((result) => {
     res.send(result);
   });
 });
