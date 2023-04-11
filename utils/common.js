@@ -198,7 +198,7 @@ async function getNoteList(req, res) {
 async function getNoteListByPage(req, res) {
   const { current, page, modelId } = req.query;
   let result;
-  console.log(modelId);
+  // console.log(modelId, current, page);
   if (modelId !== undefined) {
     result = await handleDB(res, "notes", "limit", "查询数据库错误", {
       where: `modelId = '${modelId}'`,
@@ -220,6 +220,26 @@ async function getNoteListByPage(req, res) {
   return {
     code: 200,
     data: changeResult,
+  };
+}
+
+//根据帖子Id获取帖子信息
+async function getNoteMsgById(req, res) {
+  const { noteId } = req.query;
+  const result = await handleDB(
+    res,
+    "notes",
+    "find",
+    "查询数据库错误",
+    `noteId = '${noteId}'`
+  );
+  console.log(result);
+  return {
+    code: 200,
+    data: {
+      ...result[0],
+      imgs: result[0].imgs.split("*"),
+    },
   };
 }
 
@@ -569,6 +589,7 @@ async function deleteAllOrder(req, res) {
 module.exports = {
   csrfProtect,
   getNoteList,
+  getNoteListByPage,
   saveCode,
   getUser,
   getUserExist,
@@ -583,7 +604,7 @@ module.exports = {
   confirmSingle,
   getAttention,
   amendPass,
-  getNoteListByPage,
+  getNoteMsgById,
   amendOrd,
   getAtt,
   getAttd,
