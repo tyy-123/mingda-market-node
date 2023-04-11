@@ -17,6 +17,55 @@ const emailServer = new SMTPClient({
   host: "smtp.qq.com",
   ssl: true,
 });
+const {
+  RecommendUserService,
+  RecommendGoodsService,
+} = require("./recommend/index");
+const data1 = [
+  {
+    userId: 1,
+    modelId: 1,
+  },
+  {
+    userId: 2,
+    modelId: 1,
+  },
+  {
+    userId: 2,
+    modelId: 2,
+  },
+  {
+    userId: 3,
+    modelId: 2,
+  },
+  {
+    userId: 3,
+    modelId: 4,
+  },
+  {
+    userId: 4,
+    modelId: 5,
+  },
+  {
+    userId: 4,
+    modelId: 6,
+  },
+  {
+    userId: 1,
+    modelId: 1,
+  },
+];
+// const recommendUserService = new RecommendUserService(data1, 2, 5);
+
+//测试协同推荐算法
+// const result = recommendUserService.start();
+// console.log(result, "1111111111111111111");
+// const recommendGoodsService = new RecommendGoodsService(data1, 1, 5); // userId为空则只计算商品相似度，不为空则排除掉自己买过的商品；goodsId则为计算目标
+
+// const result3 = recommendGoodsService.start();
+// console.log("result3", result3);
+// const result1 = recommendGoodsService.getGoodsGrade(1, 1);
+// console.log("11111", result1);
 
 token = async (req, res, next) => {
   //定义token验证中间件函数（应用于除登录外的每个请求）
@@ -240,7 +289,13 @@ app.get("/api/getNoteList", (req, res) => {
     res.send(result);
   });
 });
-
+//根据帖子Id获取帖子信息
+app.get("/api/getNoteMsgById", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.getNoteMsgById(req, res).then((result) => {
+    res.send(result);
+  });
+});
 //分页获取的帖子列表
 app.get("/api/getNoteListByPage", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
