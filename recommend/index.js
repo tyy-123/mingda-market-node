@@ -17,13 +17,13 @@ const RecommendUserService = class RecommendUserService {
     this.bottom = undefined;
     // 记录除用户自身外，其他所有用户的ID
     this.userArray = [];
-    // 作为中间值，记录当前正在进行的其他用户的商品列表
+    // 作为中间值，记录当前正在进行的其他用户的模块类别列表
     this.userGoodsTemp = [];
     // 记录用户最终相似度列表
     this.similarityList = [];
-    // 记录用户相似度前n个用户中所有购买的商品与本用户不重复的商品
+    // 记录用户相似度前n个用户中所有购买的模块类别与本用户不重复的模块类别
     this.targetGoods = [];
-    // 记录用户对筛选出的各商品感兴趣程度
+    // 记录用户对筛选出的各模块类别感兴趣程度
     this.interestedGrade = [];
     // 记录最后的返回结果
     this.result = [];
@@ -37,21 +37,21 @@ const RecommendUserService = class RecommendUserService {
     this.similarityList.sort((a, b) => {
       return b.grade - a.grade;
     });
-    // 计算目标商品
+    // 计算目标模块类别
     this.getTargetGoods();
-    // 此时目标商品已存在this.targetGoods中, 然后去重
+    // 此时目标模块类别已存在this.targetGoods中, 然后去重
     this.targetGoods = [...new Set(this.targetGoods)];
 
-    // 计算用户对每个商品的感兴趣程度
+    // 计算用户对每个模块类别的感兴趣程度
     for (let modelId of this.targetGoods.values()) {
       this.getInterestedGrade(modelId);
     }
-    // 计算最终商品列表并逆序排序
+    // 计算最终模块类别列表并逆序排序
     this.getFinalResult();
     return this.result;
   }
   /**
-   * 计算最终商品列表并逆序排序
+   * 计算最终模块类别列表并逆序排序
    */
   getFinalResult() {
     this.interestedGrade.sort((a, b) => {
@@ -62,11 +62,11 @@ const RecommendUserService = class RecommendUserService {
     }
   }
   /**
-   * 计算用户对该商品的感兴趣程度
-   * @param {*商品ID} modelId
+   * 计算用户对该模块类别的感兴趣程度
+   * @param {*模块类别ID} modelId
    */
   getInterestedGrade(modelId) {
-    // 筛选出对商品modelId用过行为的用户
+    // 筛选出对模块类别modelId用过行为的用户
     let array = new Set();
     for (let obj of this.data.values()) {
       if (obj.modelId === modelId) {
@@ -94,11 +94,11 @@ const RecommendUserService = class RecommendUserService {
     });
   }
   /**
-   * 获取目标商品数组
+   * 获取目标模块类别数组
    */
   getTargetGoods() {
     // this.n > this.similarityList.length ? this.n = this.similarityList.l : this.n = this.n
-    // 截至目前，以获取用户相似度的逆序排序数组，以下为获取前n个相似用户购买的所有商品中本用户没买过的
+    // 截至目前，以获取用户相似度的逆序排序数组，以下为获取前n个相似用户购买的所有模块类别中本用户没买过的
     for (let index = 0; index < this.n; index++) {
       const element = this.similarityList[index];
       _.filter(this.data, (obj) => {
@@ -108,18 +108,18 @@ const RecommendUserService = class RecommendUserService {
         return obj.userId == element.userId;
       });
     }
-    // 去掉自身的商品，得到最终目标商品数组
+    // 去掉自身的模块类别，得到最终目标模块类别数组
     this.duplicateRemovalGoods();
   }
   /**
-   * 去掉自身的商品，得到最终目标商品数组
+   * 去掉自身的模块类别，得到最终目标模块类别数组
    */
   duplicateRemovalGoods() {
-    // 获取当前用户买过的商品
+    // 获取当前用户买过的模块类别
     const userGoods = _.filter(this.data, (obj) => {
       return obj.userId == this.userId;
     });
-    // 删除本用户买过的商品
+    // 删除本用户买过的模块类别
     for (let obj of userGoods.values()) {
       if (this.targetGoods.includes(obj.modelId)) {
         this.targetGoods.splice(this.targetGoods.indexOf(obj.modelId), 1);
@@ -160,12 +160,12 @@ const RecommendUserService = class RecommendUserService {
     this.filterUserGoods(otherUserId);
     // 计算相似度的分母
     this.bottom = Math.sqrt(userSelfGoods.length * this.userGoodsTemp.length);
-    // 记录商品相似的个数
+    // 记录模块类别相似的个数
     let count = 0;
     userSelfGoods.forEach((ele) => {
       for (let index in this.userGoodsTemp) {
         if (ele.modelId == this.userGoodsTemp[index].modelId) {
-          // 惩罚热门商品,计算惩罚参数
+          // 惩罚热门模块类别,计算惩罚参数
           const log = this.filterGoodsById(ele.modelId);
           // 可在此处添加weight权重，log * weight
           count += log;
@@ -181,7 +181,7 @@ const RecommendUserService = class RecommendUserService {
     return obj.grade;
   }
   /**
-   * 过滤出用户otherUserId的商品列表
+   * 过滤出用户otherUserId的模块类别列表
    * @param {用户ID} otherUserId
    */
   filterUserGoods(otherUserId) {
@@ -190,8 +190,8 @@ const RecommendUserService = class RecommendUserService {
     });
   }
   /**
-   * 过滤出商品modelId的商品列表
-   * @param {商品ID} modelId
+   * 过滤出模块类别modelId的模块类别列表
+   * @param {模块类别ID} modelId
    */
   filterGoodsById(modelId) {
     const goods = _.filter(this.data, (obj) => {
@@ -205,7 +205,7 @@ const RecommendGoodsService = class RecommendGoodsService {
   /**
    * 构造方法
    * @param {*倒查表所有数据组成的数组} data
-   * @param {*商品ID} modelId
+   * @param {*模块类别ID} modelId
    * @param {*用户ID} userId
    * @param {*相似度最高的前k个} k
    */
@@ -213,18 +213,18 @@ const RecommendGoodsService = class RecommendGoodsService {
     this.data = data;
     this.modelId = modelId;
     this.userId = userId;
-    // 筛选前k个商品······用于模块一······
+    // 筛选前k个模块类别······用于模块一······
     this.k = k;
-    // 保存待计算商品列表······用于模块一······
+    // 保存待计算模块类别列表······用于模块一······
     this.goodsList = [];
-    // 保存当前商品的购买人列表······用于模块一······
+    // 保存当前模块类别的购买人列表······用于模块一······
     this.users = [];
-    // 保存当前商品相似度列表······用于模块一······
+    // 保存当前模块类别相似度列表······用于模块一······
     this.simpleList = [];
     // 开启第二子系统-模块二
-    // 保存当前人喜爱商品列表
+    // 保存当前人喜爱模块类别列表
     this.userPerferList = [];
-    // 保存当前人没买过的商品列表
+    // 保存当前人没买过的模块类别列表
     this.goodsMayPerferList = [];
     // 保存推荐结果并排序
     this.resultRank = [];
@@ -238,7 +238,7 @@ const RecommendGoodsService = class RecommendGoodsService {
   start() {
     // 获取待计算数据
     this.getInitialData();
-    // 开始计算用户对未买过的商品感兴趣程度
+    // 开始计算用户对未买过的模块类别感兴趣程度
     for (let modelId of this.goodsMayPerferList.values()) {
       const res = this.getUserInterest(modelId);
       this.resultRank.push(res);
@@ -255,11 +255,11 @@ const RecommendGoodsService = class RecommendGoodsService {
     return this.result;
   }
   /**
-   * 计算用户对该商品的感兴趣程度
-   * @param {*商品ID} modelId
+   * 计算用户对该模块类别的感兴趣程度
+   * @param {*模块类别ID} modelId
    */
   getUserInterest(modelId) {
-    // 获取modelId相似的商品列表
+    // 获取modelId相似的模块类别列表
     const simple = this.getGoodsGrade(false, modelId);
     let grade = 0;
     for (let [index, obj] of simple.entries()) {
@@ -280,7 +280,7 @@ const RecommendGoodsService = class RecommendGoodsService {
       }
       return array;
     }, []);
-    // 获取当前用户没买过的商品列表
+    // 获取当前用户没买过的模块类别列表
     this.goodsMayPerferList = this.data.reduce((array, obj) => {
       if (
         !array.includes(obj.modelId) &&
@@ -292,16 +292,16 @@ const RecommendGoodsService = class RecommendGoodsService {
     }, []);
   }
   /**
-   * 计算与商品modelId相似的前k个商品列表,······模块一······
-   * @param {*是否去掉自身相关的商品} isDelSelf
-   * @param {*商品ID} modelId
+   * 计算与模块类别modelId相似的前k个模块类别列表,······模块一······
+   * @param {*是否去掉自身相关的模块类别} isDelSelf
+   * @param {*模块类别ID} modelId
    */
   getGoodsGrade(isDelSelf, modelId) {
     this.simpleList = [];
     this.modelId = modelId;
-    // 获取待计算商品列表
+    // 获取待计算模块类别列表
     this.getGoodsList();
-    // 获取当前商品的购买人列表
+    // 获取当前模块类别的购买人列表
     this.users = this.getGoodsUserNum(this.modelId);
     // 计算相似度
     for (let modelId of this.goodsList.values()) {
@@ -321,10 +321,10 @@ const RecommendGoodsService = class RecommendGoodsService {
     return this.simpleList;
   }
   /**
-   * 获取目标商品数组
+   * 获取目标模块类别数组
    */
   getGoodsList() {
-    //筛选除了本商品之外的商品数据
+    //筛选除了本模块类别之外的模块类别数据
     const goodsArray = this.data.reduce((array, obj) => {
       if (obj.modelId !== this.modelId) {
         array.push(obj.modelId);
@@ -333,21 +333,21 @@ const RecommendGoodsService = class RecommendGoodsService {
     }, []);
     //数组去重并解构
     const goods = [...new Set(goodsArray)];
-    // 得到目标商品列表
+    // 得到目标模块类别列表
     this.goodsList = goods;
   }
   /**
-   * 去掉已买过的商品，得到目标商品数组
+   * 去掉已买过的模块类别，得到目标模块类别数组
    */
   getNotSelfGoods() {
-    // 筛选当前用户买过的商品
+    // 筛选当前用户买过的模块类别
     const userGoods = this.data.reduce((array, obj) => {
       if (obj.userId === this.userId) {
         array.push(obj.modelId);
       }
       return array;
     }, []);
-    // 删除本用户买过的商品
+    // 删除本用户买过的模块类别
     for (let [index, obj] of this.simpleList.entries()) {
       if (userGoods.includes(obj.modelId)) {
         this.simpleList.splice(index, 1);
@@ -355,22 +355,22 @@ const RecommendGoodsService = class RecommendGoodsService {
     }
   }
   /**
-   * 获取商品相似度列表
-   * @param {商品ID} modelId
+   * 获取模块类别相似度列表
+   * @param {模块类别ID} modelId
    */
   getGoodsSimple(modelId) {
     const users = this.getGoodsUserNum(modelId);
     // 计算相似度的分母
     const bottom = Math.sqrt(this.users.length * users.length);
     let count = 0;
-    // 计算两个商品的共同用户数，得到相识度的分子
+    // 计算两个模块类别的共同用户数，得到相识度的分子
     for (let val of users.values()) {
       if (this.users.includes(val)) {
         // 惩罚活跃用户
         count += this.getSimpleElememt(val);
       }
     }
-    // 保存结果对象，包括商品ID和相似度
+    // 保存结果对象，包括模块类别ID和相似度
     const res = {
       modelId,
       grade: count / bottom,
@@ -382,7 +382,7 @@ const RecommendGoodsService = class RecommendGoodsService {
    * @param {*用户ID} userId
    */
   getSimpleElememt(userId) {
-    // 找到用户买过的商品数量
+    // 找到用户买过的模块类别数量
     const goodsNum = this.data.reduce((array, obj) => {
       if (obj.userId === userId) {
         array.push(obj.modelId);
@@ -394,11 +394,11 @@ const RecommendGoodsService = class RecommendGoodsService {
     return element;
   }
   /**
-   * 获取商品的购买人
-   * @param {*商品ID} modelId
+   * 获取模块类别的购买人
+   * @param {*模块类别ID} modelId
    */
   getGoodsUserNum(modelId) {
-    //得到商品的购买人
+    //得到模块类别的购买人
     const users = this.data.reduce((array, obj) => {
       if (obj.modelId === modelId) {
         array.push(obj.userId);

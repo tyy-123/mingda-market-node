@@ -10,6 +10,65 @@ const ws = require("nodejs-websocket");
 const { SMTPClient } = require("emailjs");
 const jwt = require("jsonwebtoken");
 const common = require("./utils/common");
+const sd = require("silly-datetime");
+
+// 创建express对象
+const app = new express();
+app.use("/img/", express.static("./public/"));
+// 挂载处理post请求的插件
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+var server = app.listen(9999, function () {
+  //应用启动端口为8001
+  var host = server.address().address;
+  var port = server.address().port;
+  console.log("访问地址为", host, port);
+});
+
+const socketIo = require("socket.io")(server, { cors: true });
+
+let users = [];
+//监听connection（用户连接）事件，socket为用户连接的实例
+socketIo.on("connection", (socket) => {
+  socket.on("disconnect", () => {
+    console.log("用户" + socket.id + "断开连接");
+    users = users.filter((item) => item.socketId !== socket.id);
+  });
+
+  // 监听客户端连接事件
+  socket.on("client_online", (data) => {
+    const { nickName, id } = data;
+    const userInfo = {
+      nickName,
+      socketId: socket.id,
+      id,
+    };
+    users.push(userInfo);
+    socketIo.emit("server_online", users);
+  });
+
+  socket.on("client_msg", (data) => {
+    //监听msg事件（这个是自定义的事件）
+    // type 1代表左侧消息，2代表右侧消息
+    const { msg, nickName, roomId, userId } = data;
+    const params = {
+      msg,
+      nickName,
+      times: sd.format(new Date(), "YYYY-MM-DD HH:mm:ss"),
+      userId,
+    };
+
+    const leftMessage = { ...params, type: 1 };
+    const rightMessage = { ...params, type: 2 };
+
+    // 向其他人发送消息
+    socket.broadcast.emit("server_msg", leftMessage);
+    // 向当前发送者返回消息
+    socket.emit("server_msg", rightMessage);
+  });
+});
+
 // 创建emailjs服务
 const emailServer = new SMTPClient({
   user: "2200276972@qq.com",
@@ -96,13 +155,6 @@ token = async (req, res, next) => {
   }
 };
 
-// 创建express对象
-const app = new express();
-app.use("/img/", express.static("./public/"));
-// 挂载处理post请求的插件
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-
 // 随机获取头像背景
 function randomRgb() {
   let R = Math.floor(Math.random() * 130 + 110);
@@ -111,51 +163,51 @@ function randomRgb() {
   return "rgb(" + R + "," + G + "," + B + ")";
 }
 
-//记录用户人数
-let num = 0;
-//创建websocket连接对象
-let server = ws
-  .createServer((connect) => {
-    let name = "";
-    let color = "";
-    //当用户发送过来数据，会触发这个函数
-    connect.on("text", (data) => {
-      data = JSON.parse(data);
-      //判断用户进入
-      if (data.isEnter) {
-        //通知所有人新人进入聊天室
-        name = data.nickName;
-        //随机生成颜色
-        color = randomRgb();
-        //用户数加一
-        num++;
-        broadcast({
-          enter: true,
-          num,
-        });
-      } else if (data.level) {
-        // 处理用户离开
-        num--;
-        broadcast({
-          level: true,
-          num,
-        });
-      } else {
-        broadcast({
-          msg: data.msg,
-          nickName: name,
-          type: data.type,
-          color,
-        });
-      }
-    });
+// //记录用户人数
+// let num = 0;
+// //创建websocket连接对象
+// let server = ws
+//   .createServer((connect) => {
+//     let name = "";
+//     let color = "";
+//     //当用户发送过来数据，会触发这个函数
+//     connect.on("text", (data) => {
+//       data = JSON.parse(data);
+//       //判断用户进入
+//       if (data.isEnter) {
+//         //通知所有人新人进入聊天室
+//         name = data.nickName;
+//         //随机生成颜色
+//         color = randomRgb();
+//         //用户数加一
+//         num++;
+//         broadcast({
+//           enter: true,
+//           num,
+//         });
+//       } else if (data.level) {
+//         // 处理用户离开
+//         num--;
+//         broadcast({
+//           level: true,
+//           num,
+//         });
+//       } else {
+//         broadcast({
+//           msg: data.msg,
+//           nickName: name,
+//           type: data.type,
+//           color,
+//         });
+//       }
+//     });
 
-    //当发生错误时会触发（包括关闭浏览器）
-    connect.on("error", (err) => {
-      console.error(err);
-    });
-  })
-  .listen(3001);
+//     //当发生错误时会触发（包括关闭浏览器）
+//     connect.on("error", (err) => {
+//       console.error(err);
+//     });
+//   })
+//   .listen(3001);
 
 //删除所有订单
 app.get("/deleteAllOrder", (req, res) => {
@@ -263,9 +315,6 @@ app.post("/api/uploadImage", (req, res) => {
     });
 });
 
-//验证token
-app.use(token);
-
 //通过token获取当前用户登录信息
 app.get("/api/getLoginUser", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -273,6 +322,9 @@ app.get("/api/getLoginUser", (req, res) => {
     res.send(result);
   });
 });
+
+//验证token
+app.use(token);
 
 // 格式化错误信息
 function formatErrorMessage(res, message) {
@@ -308,6 +360,22 @@ app.get("/api/getNoteListByPage", (req, res) => {
 app.post("/api/postNote", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   common.postNote(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
+//获得帖子的评论列表
+app.get("/api/getCommentList", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.getCommentList(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
+//模糊查询帖子内容
+app.get("/api/queryNote", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.queryNote(req, res).then((result) => {
     res.send(result);
   });
 });

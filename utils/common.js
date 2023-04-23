@@ -282,6 +282,22 @@ async function postNote(req, res) {
   };
 }
 
+async function getCommentList(req, res) {
+  const { noteId } = req.query;
+  const result = await handleDB(
+    res,
+    "comments",
+    "find",
+    "查询数据库错误",
+    `noteId = '${noteId}'`
+  );
+  console.log(result, "评论列表结果");
+  return {
+    code: 200,
+    data: result,
+  };
+}
+
 //获取所有订单信息
 async function getOrder(req, res) {
   return await handleDB(res, "orders", "find", "查询数据库错误");
@@ -488,16 +504,26 @@ async function getAttd(req, res) {
 }
 
 //模糊查询
-async function query(req, res) {
+async function queryNote(req, res) {
   const { query } = req.query;
+  console.log(query);
   const result = await handleDB(
     res,
-    "orders",
+    "notes",
     "sql",
     "查询数据库错误",
-    `select * from orders where title like '%${query}%'`
+    `select * from notes where content like '%${query}%'`
   );
-  return result;
+  const changeResult = result.map((item) => {
+    return {
+      ...item,
+      imgs: item.imgs.split("*"),
+    };
+  });
+  return {
+    code: 200,
+    data: changeResult,
+  };
 }
 
 //关注用户
@@ -587,6 +613,7 @@ async function deleteAllOrder(req, res) {
 }
 
 module.exports = {
+  getCommentList,
   csrfProtect,
   getNoteList,
   getNoteListByPage,
@@ -609,7 +636,7 @@ module.exports = {
   getAtt,
   getAttd,
   getLoginUser,
-  query,
+  queryNote,
   addAttention,
   cancelAtt,
   inquireAtt,
