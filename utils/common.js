@@ -298,6 +298,22 @@ async function getCommentList(req, res) {
   };
 }
 
+async function getChildCommentList(req, res) {
+  const { commentId } = req.query;
+  const result = await handleDB(
+    res,
+    "chlidcomments",
+    "find",
+    "查询数据库错误",
+    `parentCommentId = '${commentId}'`
+  );
+  console.log(result, "评论列表结果");
+  return {
+    code: 200,
+    data: result,
+  };
+}
+
 //获取所有订单信息
 async function getOrder(req, res) {
   return await handleDB(res, "orders", "find", "查询数据库错误");
@@ -643,4 +659,5 @@ module.exports = {
   getUsers,
   deleteAllOrder,
   postNote,
+  getChildCommentList,
 };

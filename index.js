@@ -32,7 +32,7 @@ let users = [];
 //监听connection（用户连接）事件，socket为用户连接的实例
 socketIo.on("connection", (socket) => {
   socket.on("disconnect", () => {
-    console.log("用户" + socket.id + "断开连接");
+    // console.log("用户" + socket.id + "断开连接");
     users = users.filter((item) => item.socketId !== socket.id);
   });
 
@@ -51,6 +51,7 @@ socketIo.on("connection", (socket) => {
   socket.on("client_msg", (data) => {
     //监听msg事件（这个是自定义的事件）
     // type 1代表左侧消息，2代表右侧消息
+    console.log(data);
     const { msg, nickName, roomId, userId } = data;
     const params = {
       msg,
@@ -368,6 +369,14 @@ app.post("/api/postNote", (req, res) => {
 app.get("/api/getCommentList", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   common.getCommentList(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
+//获得帖子的二级评论
+app.get("/api/getChildCommentList", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.getChildCommentList(req, res).then((result) => {
     res.send(result);
   });
 });
