@@ -115,17 +115,17 @@ const data1 = [
     modelId: 1,
   },
 ];
-// const recommendUserService = new RecommendUserService(data1, 2, 5);
+const recommendUserService = new RecommendUserService(data1, 2, 5);
 
-//测试协同推荐算法
-// const result = recommendUserService.start();
-// console.log(result, "1111111111111111111");
-// const recommendGoodsService = new RecommendGoodsService(data1, 1, 5); // userId为空则只计算商品相似度，不为空则排除掉自己买过的商品；goodsId则为计算目标
+// 测试协同推荐算法
+const result = recommendUserService.start();
+console.log(result, "1111111111111111111");
+const recommendGoodsService = new RecommendGoodsService(data1, 1, 5); // userId为空则只计算商品相似度，不为空则排除掉自己买过的商品；goodsId则为计算目标
 
-// const result3 = recommendGoodsService.start();
-// console.log("result3", result3);
-// const result1 = recommendGoodsService.getGoodsGrade(1, 1);
-// console.log("11111", result1);
+const result3 = recommendGoodsService.start();
+console.log("result3", result3);
+const result1 = recommendGoodsService.getGoodsGrade(1, 1);
+console.log("11111", result1);
 
 token = async (req, res, next) => {
   //定义token验证中间件函数（应用于除登录外的每个请求）
@@ -377,6 +377,30 @@ app.get("/api/getCommentList", (req, res) => {
 app.get("/api/getChildCommentList", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   common.getChildCommentList(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
+//添加帖子的一级评论
+app.get("/api/addComment", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.addComment(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
+//添加帖子的二级评论
+app.get("/api/addChildComment", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.addChildComment(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
+//更新帖子的评论数量
+app.get("/api/updateCommentCount", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.updateCommentCount(req, res).then((result) => {
     res.send(result);
   });
 });

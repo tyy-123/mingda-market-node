@@ -302,12 +302,72 @@ async function getChildCommentList(req, res) {
   const { commentId } = req.query;
   const result = await handleDB(
     res,
-    "chlidcomments",
+    "childComments",
     "find",
     "查询数据库错误",
     `parentCommentId = '${commentId}'`
   );
   console.log(result, "评论列表结果");
+  return {
+    code: 200,
+    data: result,
+  };
+}
+
+async function addComment(req, res) {
+  const { noteId, userId, content } = req.query;
+  const result = await handleDB(res, "comments", "insert", "插入数据库错误", {
+    noteId,
+    userId,
+    content,
+    releaseTime: sd.format(new Date(), "YYYY-MM-DD,HH-mm-ss"),
+  });
+  return {
+    code: 200,
+    data: result,
+  };
+}
+
+async function addChildComment(req, res) {
+  const { parentCommentId, reply_to, userId, content } = req.query;
+  const result = await handleDB(
+    res,
+    "childComments",
+    "insert",
+    "插入数据库错误",
+    {
+      parentCommentId,
+      reply_to: reply_to ? reply_to : "",
+      userId,
+      content,
+      releaseTime: sd.format(new Date(), "YYYY-MM-DD,HH-mm-ss"),
+    }
+  );
+  return {
+    code: 200,
+    data: result,
+  };
+}
+
+async function updateCommentCount(req, res) {
+  const { noteId } = req.query;
+  const noteMsg = await handleDB(
+    res,
+    "notes",
+    "find",
+    "查询数据库错误",
+    `noteId='${noteId}'`
+  );
+  console.log(noteMsg[0]);
+  const result = await handleDB(
+    res,
+    "notes",
+    "sql",
+    "更新数据库错误",
+    `update notes set commentCount='${
+      noteMsg[0].commentCount + 1
+    }' where noteId='${noteId}'`
+  );
   return {
     code: 200,
     data: result,
@@ -629,7 +689,10 @@ async function deleteAllOrder(req, res) {
 }
 
 module.exports = {
+  addComment,
+  addChildComment,
   getCommentList,
+  updateCommentCount,
   csrfProtect,
   getNoteList,
   getNoteListByPage,
