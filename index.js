@@ -356,7 +356,7 @@ app.get("/api/getNoteListByPage", (req, res) => {
     res.send(result);
   });
 });
-
+          
 //发布帖子
 app.post("/api/postNote", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -405,10 +405,34 @@ app.get("/api/updateCommentCount", (req, res) => {
   });
 });
 
+//修改用户信息
+app.get("/api/updateUserMsg", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.updateUserMsg(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
+//修改用户密码
+app.get("/api/updateUserPassword", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.updateUserPassword(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
 //模糊查询帖子内容
 app.get("/api/queryNote", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   common.queryNote(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
+//根据用户id查询用户帖子
+app.get("/api/getNoteById", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.getNoteById(req, res).then((result) => {
     res.send(result);
   });
 });

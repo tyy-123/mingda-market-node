@@ -140,6 +140,77 @@ async function getRegister(req, res) {
   };
 }
 
+//修改用户信息
+async function updateUserMsg(req, res) {
+  const { username, avatar, userId } = req.query;
+  console.log(username, avatar, userId);
+  if (avatar) {
+    await handleDB(
+      res,
+      "users",
+      "sql",
+      "更新数据库错误",
+      `update users set username='${username}', avatar='${avatar}' where userId='${userId}'`
+    );
+    await handleDB(
+      res,
+      "notes",
+      "sql",
+      "更新数据库错误",
+      `update notes set username='${username}', avatar='${avatar}' where userId='${userId}'`
+    );
+  } else {
+    await handleDB(
+      res,
+      "users",
+      "sql",
+      "更新数据库错误",
+      `update users set username='${username}' where userId='${userId}'`
+    );
+    await handleDB(
+      res,
+      "notes",
+      "sql",
+      "更新数据库错误",
+      `update notes set username='${username}' where userId='${userId}'`
+    );
+  }
+  return {
+    code: 200,
+    data: "修改成功",
+  };
+}
+
+//修改用户密码
+async function updateUserPassword(req, res) {
+  const { oldPassword, newPassword, userId } = req.query;
+  console.log(oldPassword, newPassword);
+  let user = await handleDB(
+    res,
+    "users",
+    "find",
+    "查询数据库错误",
+    `userId='${userId}'`
+  );
+  const { password } = user[0];
+  console.log(password);
+  if (password === oldPassword) {
+    await handleDB(
+      res,
+      "users",
+      "sql",
+      "更新数据库错误",
+      `update users set password='${newPassword}' where userId='${userId}'`
+    );
+  } else {
+    res.status(200).send({ msg: "旧密码错误请重新输入", code: 300 });
+  }
+  return {
+    code: 200,
+    data: "修改成功",
+  };
+}
+
 //根据token获取用户信息
 async function getLoginUser(req, res) {
   if (req.headers.authorization) {
@@ -325,6 +396,27 @@ async function addComment(req, res) {
   return {
     code: 200,
     data: result,
+  };
+}
+
+async function getNoteById(req, res) {
+  const { userId } = req.query;
+  const result = await handleDB(
+    res,
+    "notes",
+    "find",
+    "查询数据库错误",
+    `userId = '${userId}'`
+  );
+  const changeResult = result.map((item) => {
+    return {
+      ...item,
+      imgs: item.imgs.split("*"),
+    };
+  });
+  return {
+    code: 200,
+    data: changeResult,
   };
 }
 
@@ -723,4 +815,7 @@ module.exports = {
   deleteAllOrder,
   postNote,
   getChildCommentList,
+  getNoteById,
+  updateUserPassword,
+  updateUserMsg,
 };
