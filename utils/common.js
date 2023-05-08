@@ -110,7 +110,7 @@ async function getRegister(req, res) {
   let result;
   //判断验证码是否正确
   console.log(user);
-  const { userId, account } = user;
+  const { userId, account } = user[0];
   const token = jwt.sign({ userId, account }, secret, { expiresIn: 60 * 60 });
   if (user[0].authCode === authCode) {
     result = await handleDB(
@@ -210,11 +210,18 @@ async function updateUserPassword(req, res) {
     data: "修改成功",
   };
 }
+console.log(
+  jwt.verify(
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50IjoiZGFkYWRhQHFxLmNvbSIsImlhdCI6MTY4MzUxNzEzMCwiZXhwIjoxNjgzNTIwNzMwfQ.7SnZJu4RFIHT-l5F4LVD1irpwYwZONuPeWNURehcdC4",
+    secret
+  ).userId,'1111111'
+);
 
 //根据token获取用户信息
 async function getLoginUser(req, res) {
   if (req.headers.authorization) {
     const token = req.headers.authorization;
+    console.log(token);
     const { userId, account } = jwt.verify(token, secret); // 对token进行解密查找
     let result = await handleDB(
       res,
@@ -223,6 +230,7 @@ async function getLoginUser(req, res) {
       "查询数据库错误",
       `userId = '${userId}'`
     );
+    console.log(result);
     if (result.length === 0) {
       res.status(200).send({ msg: "用户错误" });
       return;
