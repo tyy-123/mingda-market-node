@@ -112,6 +112,12 @@ async function getRegister(req, res) {
   console.log(user);
   const { userId, account } = user[0];
   const token = jwt.sign({ userId, account }, secret, { expiresIn: 60 * 60 });
+  if (!user[0].authCode) {
+    res.send({
+      title: "请输入正确的验证码",
+      code: 300,
+    });
+  }
   if (user[0].authCode === authCode) {
     result = await handleDB(
       res,
@@ -214,7 +220,8 @@ console.log(
   jwt.verify(
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50IjoiZGFkYWRhQHFxLmNvbSIsImlhdCI6MTY4MzUxNzEzMCwiZXhwIjoxNjgzNTIwNzMwfQ.7SnZJu4RFIHT-l5F4LVD1irpwYwZONuPeWNURehcdC4",
     secret
-  ).userId,'1111111'
+  ).userId,
+  "1111111"
 );
 
 //根据token获取用户信息
