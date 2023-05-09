@@ -2,6 +2,7 @@ const handleDB = require("../db/handleDB");
 const jwt = require("jsonwebtoken");
 const secret = "login-rule"; //秘钥规则（自定义）
 const sd = require("silly-datetime");
+const { RecommendUserService } = require("../recommend/index");
 
 //获取随机字符串
 function getRandomString(n) {
@@ -216,14 +217,6 @@ async function updateUserPassword(req, res) {
     data: "修改成功",
   };
 }
-console.log(
-  jwt.verify(
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50IjoiZGFkYWRhQHFxLmNvbSIsImlhdCI6MTY4MzUxNzEzMCwiZXhwIjoxNjgzNTIwNzMwfQ.7SnZJu4RFIHT-l5F4LVD1irpwYwZONuPeWNURehcdC4",
-    secret
-  ).userId,
-  "1111111"
-);
-
 //根据token获取用户信息
 async function getLoginUser(req, res) {
   if (req.headers.authorization) {
@@ -267,7 +260,18 @@ async function saveCode(req, res) {
 
 //获得所有的帖子列表
 async function getNoteList(req, res) {
-  const result = await handleDB(res, "notes", "find", "查询数据库错误");
+  const { modelId } = req.query;
+  let result;
+  console.log(modelId);
+  if (modelId !== undefined) {
+    result = await handleDB(
+      res,
+      "notes",
+      "find",
+      "查询数据库错误",
+      `modelId = '${modelId}'`
+    );
+  } else result = await handleDB(res, "notes", "find", "查询数据库错误");
   const changeResult = result.map((item) => {
     return {
       ...item,
@@ -282,17 +286,34 @@ async function getNoteList(req, res) {
 
 //分页获取的帖子列表
 async function getNoteListByPage(req, res) {
-  const { current, page, modelId } = req.query;
+  const { current, page, modelId, userId } = req.query;
+  const totalResult = await handleDB(res, "notes", "find", "查询数据库错误");
+  const recommendData = await handleDB(
+    res,
+    "userrecommendmsg",
+    "find",
+    "查询数据库错误"
+  );
+  const recommendUserService = new RecommendUserService(
+    recommendData,
+    userId,
+    5
+  );
+  // 测试协同推荐算法
+  const recommendResult = recommendUserService.start();
+  console.log(recommendResult, "推荐结果");
   let result;
   // console.log(modelId, current, page);
   if (modelId !== undefined) {
     result = await handleDB(res, "notes", "limit", "查询数据库错误", {
       where: `modelId = '${modelId}'`,
+      recommend: JSON.stringify(recommendResult).replace(/[\[\]]/g, ""),
       current,
       page,
     });
   } else {
     result = await handleDB(res, "notes", "limit", "查询数据库错误", {
+      recommend: JSON.stringify(recommendResult).replace(/[\[\]]/g, ""),
       current,
       page,
     });
@@ -305,7 +326,10 @@ async function getNoteListByPage(req, res) {
   });
   return {
     code: 200,
-    data: changeResult,
+    data: {
+      list: changeResult,
+      total: totalResult.length,
+    },
   };
 }
 
@@ -432,6 +456,24 @@ async function getNoteById(req, res) {
   return {
     code: 200,
     data: changeResult,
+  };
+}
+
+async function addRecommendData(req, res) {
+  const { userId, modelId } = req.query;
+  const result = await handleDB(
+    res,
+    "userrecommendmsg",
+    "insert",
+    "插入数据库错误",
+    {
+      userId,
+      modelId,
+    }
+  );
+  return {
+    code: 200,
+    data: result,
   };
 }
 
@@ -833,4 +875,5 @@ module.exports = {
   getNoteById,
   updateUserPassword,
   updateUserMsg,
+  addRecommendData,
 };

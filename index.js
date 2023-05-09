@@ -79,7 +79,6 @@ const emailServer = new SMTPClient({
 });
 const {
   RecommendUserService,
-  RecommendGoodsService,
 } = require("./recommend/index");
 const data1 = [
   {
@@ -119,13 +118,6 @@ const recommendUserService = new RecommendUserService(data1, 2, 5);
 
 // 测试协同推荐算法
 const result = recommendUserService.start();
-console.log(result, "1111111111111111111");
-const recommendGoodsService = new RecommendGoodsService(data1, 1, 5); // userId为空则只计算商品相似度，不为空则排除掉自己买过的商品；goodsId则为计算目标
-
-const result3 = recommendGoodsService.start();
-console.log("result3", result3);
-const result1 = recommendGoodsService.getGoodsGrade(1, 1);
-console.log("11111", result1);
 
 token = async (req, res, next) => {
   //定义token验证中间件函数（应用于除登录外的每个请求）
@@ -163,52 +155,6 @@ function randomRgb() {
   let B = Math.floor(Math.random() * 130 + 110);
   return "rgb(" + R + "," + G + "," + B + ")";
 }
-
-// //记录用户人数
-// let num = 0;
-// //创建websocket连接对象
-// let server = ws
-//   .createServer((connect) => {
-//     let name = "";
-//     let color = "";
-//     //当用户发送过来数据，会触发这个函数
-//     connect.on("text", (data) => {
-//       data = JSON.parse(data);
-//       //判断用户进入
-//       if (data.isEnter) {
-//         //通知所有人新人进入聊天室
-//         name = data.nickName;
-//         //随机生成颜色
-//         color = randomRgb();
-//         //用户数加一
-//         num++;
-//         broadcast({
-//           enter: true,
-//           num,
-//         });
-//       } else if (data.level) {
-//         // 处理用户离开
-//         num--;
-//         broadcast({
-//           level: true,
-//           num,
-//         });
-//       } else {
-//         broadcast({
-//           msg: data.msg,
-//           nickName: name,
-//           type: data.type,
-//           color,
-//         });
-//       }
-//     });
-
-//     //当发生错误时会触发（包括关闭浏览器）
-//     connect.on("error", (err) => {
-//       console.error(err);
-//     });
-//   })
-//   .listen(3001);
 
 //删除所有订单
 app.get("/deleteAllOrder", (req, res) => {
@@ -433,6 +379,14 @@ app.get("/api/queryNote", (req, res) => {
 app.get("/api/getNoteById", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   common.getNoteById(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
+//添加推荐数据
+app.get("/api/addRecommendData", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.addRecommendData(req, res).then((result) => {
     res.send(result);
   });
 });

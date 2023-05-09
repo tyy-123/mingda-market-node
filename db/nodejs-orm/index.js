@@ -38,7 +38,7 @@ Model.prototype.find = function (options, callback) {
       } else {
         str = `select * from ${this.name} where ${options}`;
       }
-      //console.log(str);
+      console.log(str);
       connection.query(str, (error, results, fields) => {
         callback(error, results, fields);
       });
@@ -47,12 +47,20 @@ Model.prototype.find = function (options, callback) {
   } else {
     var str = "";
     if (!callback) {
-      str = `select * from ${this.name}`;
+      if (this.name === "notes")
+        str = `select * from ${this.name} order by releaseTime desc`;
+      else str = `select * from ${this.name}`;
       callback = options;
     } else if (options.constructor == Array) {
-      str = `select ${options.join()} from ${this.name}`;
+      if (this.name === "notes")
+        str = `select ${options.join()} from ${
+          this.name
+        } order by releaseTime desc`;
+      else str = `select ${options.join()} from ${this.name}`;
     } else {
-      str = `select * from ${this.name} where ${options}`;
+      if (this.name === "notes")
+        str = `select * from ${this.name}  where ${options} order by releaseTime desc`;
+      else str = `select * from ${this.name}  where ${options} `;
     }
     //console.log(str);
     connection.query(str, (error, results, fields) => {
@@ -70,11 +78,15 @@ Model.prototype.find = function (options, callback) {
 Model.prototype.limit = function (options, callback) {
   var str = "";
   if (!options.where) {
-    str = `select * from ${this.name} limit ${
-      (options.current - 1) * options.page
-    },${options.page}`;
+    str = `select * from ${this.name} order by field(modelId,${
+      options.recommend
+    }),releaseTime desc limit ${(options.current - 1) * options.page},${
+      options.page
+    }`;
   } else {
-    str = `select * from ${this.name} where ${options.where} limit ${
+    str = `select * from ${this.name}  where ${
+      options.where
+    } order by field(modelId,${options.recommend}),releaseTime desc limit ${
       (options.current - 1) * options.page
     },${options.page}`;
   }
