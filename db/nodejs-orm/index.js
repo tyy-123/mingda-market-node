@@ -135,7 +135,9 @@ Model.prototype.insertObj = function (obj, callback) {
   let values = "";
   for (var key in obj) {
     keys.push(key);
-    values += `"${obj[key]}",`;
+    if (key === "message") {
+      values += `'${obj[key]}',`;
+    } else values += `"${obj[key]}",`;
   }
   values = values.replace(/,$/, "");
   let str = `INSERT INTO ${this.name} (${keys.join()}) VALUES (${values})`;

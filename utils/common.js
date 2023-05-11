@@ -433,17 +433,28 @@ async function getUserMessage(req, res) {
 
 async function saveUserMessage(req, res) {
   const { userId, replyUserId, message } = req.body;
+  console.log(message);
   const result = await handleDB(
     res,
     "userMessage",
-    "insert",
-    "插入数据库错误",
-    {
+    "find",
+    "查询数据库错误",
+    `userId = '${userId}'and replyUserId = '${replyUserId}' `
+  );
+  if (result.length) {
+    await handleDB(
+      res,
+      "userMessage",
+      "sql",
+      "更新数据库错误",
+      `update userMessage set message='${message}' where userId = '${userId}' and replyUserId = '${replyUserId}'`
+    );
+  } else
+    await handleDB(res, "userMessage", "insert", "插入数据库错误", {
       userId,
       replyUserId,
-      message ,
-    }
-  );
+      message,
+    });
   return {
     code: 200,
     data: result,
