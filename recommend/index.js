@@ -18,7 +18,7 @@ const RecommendUserService = class RecommendUserService {
     // 记录除用户自身外，其他所有用户的ID
     this.userArray = [];
     // 作为中间值，记录当前正在进行的其他用户的模块类别列表
-    this.userGoodsTemp = [];
+    this.userModelsTemp = [];
     // 记录用户最终相似度列表
     this.similarityList = [];
     // 记录用户相似度前n个用户中所有购买的模块类别与本用户不重复的模块类别
@@ -159,12 +159,12 @@ const RecommendUserService = class RecommendUserService {
     });
     this.filterUserGoods(otherUserId);
     // 计算相似度的分母
-    this.bottom = Math.sqrt(userSelfGoods.length * this.userGoodsTemp.length);
+    this.bottom = Math.sqrt(userSelfGoods.length * this.userModelsTemp.length);
     // 记录模块类别相似的个数
     let count = 0;
     userSelfGoods.forEach((ele) => {
-      for (let index in this.userGoodsTemp) {
-        if (ele.modelId == this.userGoodsTemp[index].modelId) {
+      for (let index in this.userModelsTemp) {
+        if (ele.modelId == this.userModelsTemp[index].modelId) {
           // 惩罚热门模块类别,计算惩罚参数
           const log = this.filterGoodsById(ele.modelId);
           // 可在此处添加weight权重，log * weight
@@ -185,7 +185,7 @@ const RecommendUserService = class RecommendUserService {
    * @param {用户ID} otherUserId
    */
   filterUserGoods(otherUserId) {
-    this.userGoodsTemp = _.filter(this.data, (obj) => {
+    this.userModelsTemp = _.filter(this.data, (obj) => {
       return obj.userId == otherUserId;
     });
   }

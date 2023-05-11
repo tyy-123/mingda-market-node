@@ -408,6 +408,48 @@ async function getCommentList(req, res) {
   };
 }
 
+async function getUserMessage(req, res) {
+  const { userId } = req.query;
+  const result = await handleDB(
+    res,
+    "userMessage",
+    "find",
+    "查询数据库错误",
+    `userId = '${userId}'`
+  );
+  console.log(result, "评论列表结果");
+  const changeResult = result.map((item) => {
+    return {
+      ...item,
+      message: JSON.parse(item.message),
+    };
+  });
+  console.log(changeResult, "1111111111111111111111");
+  return {
+    code: 200,
+    data: changeResult[0],
+  };
+}
+
+async function saveUserMessage(req, res) {
+  const { userId, replyUserId, message } = req.body;
+  const result = await handleDB(
+    res,
+    "userMessage",
+    "insert",
+    "插入数据库错误",
+    {
+      userId,
+      replyUserId,
+      message ,
+    }
+  );
+  return {
+    code: 200,
+    data: result,
+  };
+}
+
 async function getChildCommentList(req, res) {
   const { commentId } = req.query;
   const result = await handleDB(
@@ -876,4 +918,6 @@ module.exports = {
   updateUserPassword,
   updateUserMsg,
   addRecommendData,
+  saveUserMessage,
+  getUserMessage,
 };

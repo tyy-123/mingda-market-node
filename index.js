@@ -351,6 +351,22 @@ app.get("/api/updateCommentCount", (req, res) => {
   });
 });
 
+//保存用户聊天消息
+app.post("/api/saveUserMessage", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.saveUserMessage(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
+//保存用户聊天消息
+app.get("/api/getUserMessage", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.getUserMessage(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
 //修改用户信息
 app.get("/api/updateUserMsg", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
