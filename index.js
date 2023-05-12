@@ -77,47 +77,6 @@ const emailServer = new SMTPClient({
   host: "smtp.qq.com",
   ssl: true,
 });
-const {
-  RecommendUserService,
-} = require("./recommend/index");
-const data1 = [
-  {
-    userId: 1,
-    modelId: 1,
-  },
-  {
-    userId: 2,
-    modelId: 1,
-  },
-  {
-    userId: 2,
-    modelId: 2,
-  },
-  {
-    userId: 3,
-    modelId: 2,
-  },
-  {
-    userId: 3,
-    modelId: 4,
-  },
-  {
-    userId: 4,
-    modelId: 5,
-  },
-  {
-    userId: 4,
-    modelId: 6,
-  },
-  {
-    userId: 1,
-    modelId: 1,
-  },
-];
-const recommendUserService = new RecommendUserService(data1, 2, 5);
-
-// 测试协同推荐算法
-const result = recommendUserService.start();
 
 token = async (req, res, next) => {
   //定义token验证中间件函数（应用于除登录外的每个请求）
@@ -359,13 +318,22 @@ app.post("/api/saveUserMessage", (req, res) => {
   });
 });
 
-//保存用户聊天消息
+//获取用户聊天消息
 app.get("/api/getUserMessage", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   common.getUserMessage(req, res).then((result) => {
     res.send(result);
   });
 });
+
+//获取我的消息列表
+app.get("/api/getMessageList", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  common.getMessageList(req, res).then((result) => {
+    res.send(result);
+  });
+});
+
 
 //修改用户信息
 app.get("/api/updateUserMsg", (req, res) => {

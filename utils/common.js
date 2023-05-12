@@ -50,7 +50,7 @@ async function getUser(req, res) {
       const { userId, account } = result[0];
       //对token进行加密响应个客户端（参数1：传值规则；参数2：加密规则; 参数3：定义时间）
       const token = jwt.sign({ userId, account }, secret, {
-        expiresIn: 60 * 60,
+        expiresIn: "1day",
       });
       res.status(200).send({ msg: "登陆成功", data: { token }, code: 200 });
     } else {
@@ -111,8 +111,14 @@ async function getRegister(req, res) {
   let result;
   //判断验证码是否正确
   console.log(user);
+  if (!user?.length) {
+    res.send({
+      title: "请先发送验证码",
+      code: 300,
+    });
+  }
   const { userId, account } = user[0];
-  const token = jwt.sign({ userId, account }, secret, { expiresIn: 60 * 60 });
+  const token = jwt.sign({ userId, account }, secret, { expiresIn: "1day" });
   if (!user[0].authCode) {
     res.send({
       title: "请输入正确的验证码",
@@ -409,13 +415,13 @@ async function getCommentList(req, res) {
 }
 
 async function getUserMessage(req, res) {
-  const { userId } = req.query;
+  const { userId, replyUserId } = req.query;
   const result = await handleDB(
     res,
     "userMessage",
     "find",
     "查询数据库错误",
-    `userId = '${userId}'`
+    `userId = '${userId}' and replyUserId = '${replyUserId}'`
   );
   console.log(result, "评论列表结果");
   const changeResult = result.map((item) => {
@@ -428,6 +434,28 @@ async function getUserMessage(req, res) {
   return {
     code: 200,
     data: changeResult[0],
+  };
+}
+
+async function getMessageList(req, res) {
+  const { userId } = req.query;
+  const result = await handleDB(
+    res,
+    "userMessage",
+    "find",
+    "查询数据库错误",
+    `userId = '${userId}'`
+  );
+  const changeResult = result.map((item) => {
+    return {
+      ...item,
+      message: JSON.parse(item.message),
+    };
+  });
+  console.log(changeResult, "1111111111111111111111");
+  return {
+    code: 200,
+    data: changeResult,
   };
 }
 
@@ -454,6 +482,7 @@ async function saveUserMessage(req, res) {
       userId,
       replyUserId,
       message,
+      releaseTime: sd.format(new Date(), "YYYY-MM-DD,HH-mm-ss"),
     });
   return {
     code: 200,
@@ -931,4 +960,5 @@ module.exports = {
   addRecommendData,
   saveUserMessage,
   getUserMessage,
+  getMessageList,
 };
