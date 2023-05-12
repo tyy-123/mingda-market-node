@@ -115,22 +115,6 @@ function randomRgb() {
   return "rgb(" + R + "," + G + "," + B + ")";
 }
 
-//删除所有订单
-app.get("/deleteAllOrder", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.deleteAllOrder(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//订单详情
-app.get("/detail", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.getOrder(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
 //登录
 app.get("/api/login", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -261,7 +245,7 @@ app.get("/api/getNoteListByPage", (req, res) => {
     res.send(result);
   });
 });
-          
+
 //发布帖子
 app.post("/api/postNote", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -334,7 +318,6 @@ app.get("/api/getMessageList", (req, res) => {
   });
 });
 
-
 //修改用户信息
 app.get("/api/updateUserMsg", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -375,142 +358,6 @@ app.get("/api/addRecommendData", (req, res) => {
   });
 });
 
-// 新建订单到数据库
-app.post("/addOrder", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.addOrder(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//获取单个用户的订单
-app.get("/released", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.getReleased(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//用户接单
-app.get("/handleOrder", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.handleOrder(req, res).then((result) => {
-    res.send({ code: 200, data: result });
-  });
-});
-
-//获取用户接单
-app.get("/catcher", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.catcher(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//用户点击完单，进入验单阶段
-app.get("/confirm", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.confirm(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//用户确认完单，验单完成
-app.get("/confirmSingle", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.confirmSingle(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//获取用户关注的对象id
-app.get("/getAttention", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.getAttention(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//修改用户密码
-app.get("/amendPass", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.amendPass(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//修改用户普通信息
-app.get("/amendOrd", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.amendOrd(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//获取用户关注的
-app.get("/getAtt", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.getAtt(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//获取关注用户的
-app.get("/getAttd", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.getAttd(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//查询用户是否关注发单者
-app.get("/inquireAtt", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.inquireAtt(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//模糊查询
-app.get("/query", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.query(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//关注用户
-app.get("/addAttention", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.addAttention(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//用户取消关注
-app.get("/cancelAtt", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.cancelAtt(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
-//获取用户
-app.get("/getUsers", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  common.getUsers(req, res).then((result) => {
-    res.send(result);
-  });
-});
-
 app.listen(8001, () => {
   console.log("正在监听8001端口");
 });
-
-// 定义广播函数，给所有用户发送信息
-function broadcast(msg) {
-  //server.connections: 表示所有的用户
-  server.connections.forEach((item) => {
-    item.send(JSON.stringify(msg));
-  });
-}
