@@ -375,7 +375,7 @@ async function getCommentList(req, res) {
     "comments",
     "find",
     "查询数据库错误",
-    `noteId = '${noteId}'`
+    `noteId = '${noteId}' order by releaseTime desc `
   );
   console.log(result, "评论列表结果");
   return {

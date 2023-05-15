@@ -83,8 +83,6 @@ token = async (req, res, next) => {
   if (req.headers.authorization) {
     const token = req.headers.authorization;
     const { userId, account } = jwt.verify(token, secret); // 对token进行解密查找
-    // console.log(userId);
-    // console.log(account);
     let result = await handleDB(
       res,
       "users",
@@ -92,7 +90,6 @@ token = async (req, res, next) => {
       "查询数据库错误",
       `userId = '${userId}'`
     );
-    // console.log(result);
     if (result.length === 0) {
       res.status(200).send({ msg: "用户错误" });
       return;
